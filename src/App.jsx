@@ -794,6 +794,9 @@ export default function ChessApp(){
         // Coach advice after each player move
         if(gameMode==="coach"){
           fetchCoachAdvice(nb,nextTurn,[sr,sc,r,c]);
+          if(nextTurn==="b"&&(!st||st===t("check"))){
+            doAiMove(nb,newEp,{depth:2,random:0.1,elo:800});
+          }
         }
         const gameOver=st&&st!==t("check");
         if(gameOver){
