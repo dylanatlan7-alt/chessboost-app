@@ -1136,7 +1136,7 @@ export default function ChessApp(){
         }}>🌐 {lang.toUpperCase()}</button>
         {/* Dropdowns */}
         {showLangMenu&&(
-          <div style={{position:"absolute",right:0,top:"calc(100% + 6px)",background:"#111",border:`1px solid ${th.accent}40`,borderRadius:"10px",zIndex:200,overflow:"hidden",minWidth:"150px",boxShadow:"0 8px 24px rgba(0,0,0,0.7)"}}>
+          <<div onClick={e=>e.stopPropagation()} style={{position:"absolute",right:0,top:"calc(100% + 6px)",background:"#111",border:`1px solid ${th.accent}40`,borderRadius:"10px",zIndex:200,overflow:"hidden",minWidth:"150px",boxShadow:"0 8px 24px rgba(0,0,0,0.7)"}}>
             {Object.keys(LANGS).map(l=>(
               <div key={l} onClick={()=>{setLang(l);setShowLangMenu(false);}} style={{
                 padding:"0.55rem 1rem",cursor:"pointer",
