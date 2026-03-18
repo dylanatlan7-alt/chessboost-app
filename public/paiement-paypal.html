@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChessBoost — Paiement sécurisé</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f14; --card: #161a23; --border: #252a35;
+      --accent: #0070ba; --accent2: #009cde; --gold: #f5c842;
+      --text: #e8eaf0; --muted: #7a8099; --success: #2ecc71; --error: #e74c3c;
+    }
+    body {
+      background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 2rem; position: relative; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 60% 20%, rgba(0,112,186,0.12) 0%, transparent 55%),
+                  radial-gradient(ellipse at 20% 80%, rgba(0,156,222,0.08) 0%, transparent 45%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { position: relative; z-index: 1; width: 100%; max-width: 460px; animation: fadeUp 0.6s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .logo-area { text-align: center; margin-bottom: 2rem; }
+    .site-name { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--gold); letter-spacing: -0.5px; margin-bottom: 4px; }
+    .site-name span { color: #fff; }
+    .paypal-tag { font-family: 'DM Serif Display', serif; font-size: 1rem; opacity: 0.5; }
+    .paypal-tag .pay { color: #6ea8d8; } .paypal-tag .pal { color: #009cde; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.25);
+      border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; color: var(--success);
+      font-weight: 500; letter-spacing: 0.5px; margin-top: 0.5rem;
+    }
+    .badge::before { content: '🔒'; font-size: 0.8rem; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03);
+    }
+    .card h2 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 0.3rem; color: #fff; }
+    .card .subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.8rem; }
+    .amount-box {
+      background: rgba(0,112,186,0.08); border: 1px solid rgba(0,112,186,0.2);
+      border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.4rem;
+    }
+    .amount-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+    .amount-box .label { font-size: 0.82rem; color: var(--muted); }
+    .amount-box .price { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--gold); letter-spacing: -1px; }
+    .amount-box .fixed-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .converter { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .converter > span { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+    .conv-grid { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; margin-top: 4px; }
+    .conv-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px;
+      padding: 5px 10px; font-size: 0.75rem; color: var(--text); font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s; font-weight: 500;
+    }
+    .conv-btn:hover, .conv-btn.active {
+      background: rgba(0,156,222,0.15); border-color: rgba(0,156,222,0.4); color: var(--accent2);
+    }
+    .conv-result { font-size: 0.9rem; color: var(--accent2); font-weight: 700; margin-top: 8px; width: 100%; text-align: right; }
+    .card-icons { display: flex; gap: 6px; margin-bottom: 1.4rem; }
+    .card-icon {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px;
+      padding: 4px 10px; font-size: 0.75rem; color: var(--muted); font-weight: 600; letter-spacing: 0.5px;
+    }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0; color: var(--muted); font-size: 0.78rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .btn-paypal {
+      width: 100%; background: linear-gradient(135deg, #0070ba, #009cde); color: #fff; border: none;
+      border-radius: 12px; padding: 0.9rem; font-size: 1rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 20px rgba(0,112,186,0.35); display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-bottom: 1rem;
+    }
+    .btn-paypal:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,112,186,0.45); }
+    .btn-paypal:active { transform: scale(0.98); opacity: 0.9; }
+    .btn-paypal.loading { opacity: 0.7; pointer-events: none; }
+    .btn-card {
+      width: 100%; background: transparent; color: var(--text); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.85rem; font-size: 0.95rem; font-weight: 500;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+    .card-form { display: none; margin-top: 1.2rem; }
+    .card-form.visible { display: block; animation: fadeUp 0.3s ease both; }
+    .field { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.4px; text-transform: uppercase; }
+    input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.95rem; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input::placeholder { color: #3e4558; }
+    input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,156,222,0.12); }
+    input.error { border-color: var(--error); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .submit-btn {
+      width: 100%; background: linear-gradient(135deg, #f5c842, #f0a500); color: #1a1000; border: none;
+      border-radius: 12px; padding: 0.9rem; font-size: 1rem; font-weight: 700; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 20px rgba(245,200,66,0.3); margin-top: 1rem;
+    }
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(245,200,66,0.4); }
+    .submit-btn:active { transform: scale(0.98); }
+    .error-msg { font-size: 0.78rem; color: var(--error); margin-top: 4px; display: none; }
+    .success-screen { display: none; text-align: center; padding: 2rem 0; animation: fadeUp 0.5s ease both; }
+    .success-screen .checkmark { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+    .success-screen h3 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--success); margin-bottom: 0.5rem; }
+    .success-screen p { color: var(--muted); font-size: 0.9rem; }
+    .footer { text-align: center; margin-top: 1.5rem; font-size: 0.75rem; color: #3e4558; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-area">
+      <div class="site-name">♟ Chess<span>Boost</span></div>
+      <div class="paypal-tag">via <span class="pay">Pay</span><span class="pal">Pal</span></div>
+      <br/>
+      <span class="badge">Paiement 100% sécurisé</span>
+    </div>
+
+    <div class="card">
+      <div id="mainForm">
+        <h2>Finaliser le paiement</h2>
+        <p class="subtitle">Accès premium ChessBoost — paiement unique</p>
+
+        <div class="amount-box">
+          <div class="amount-main">
+            <div>
+              <div class="label">Montant total</div>
+              <div class="fixed-label">USD — montant fixe</div>
+            </div>
+            <div class="price">$15.00</div>
+          </div>
+          <div class="converter">
+            <span>Convertir $15.00 en :</span>
+            <div class="conv-grid">
+              <button class="conv-btn" id="btnEUR" onclick="convert('EUR')">🇪🇺 EUR</button>
+              <button class="conv-btn" id="btnCAD" onclick="convert('CAD')">🇨🇦 CAD</button>
+              <button class="conv-btn" id="btnGBP" onclick="convert('GBP')">🇬🇧 GBP</button>
+              <button class="conv-btn" id="btnCHF" onclick="convert('CHF')">🇨🇭 CHF</button>
+              <button class="conv-btn" id="btnJPY" onclick="convert('JPY')">🇯🇵 JPY</button>
+              <button class="conv-btn" id="btnAUD" onclick="convert('AUD')">🇦🇺 AUD</button>
+              <button class="conv-btn" id="btnMXN" onclick="convert('MXN')">🇲🇽 MXN</button>
+              <button class="conv-btn" id="btnBRL" onclick="convert('BRL')">🇧🇷 BRL</button>
+            </div>
+            <div class="conv-result" id="convResult"></div>
+          </div>
+        </div>
+
+        <div class="card-icons">
+          <span class="card-icon">VISA</span>
+          <span class="card-icon">MC</span>
+          <span class="card-icon">AMEX</span>
+          <span class="card-icon">PayPal</span>
+        </div>
+
+        <button class="btn-paypal" id="btnPaypal" onclick="payWithPaypal()">
+          💙 Payer avec PayPal — $15.00
+        </button>
+
+        <div class="divider">ou payer par carte</div>
+
+        <button class="btn-card" onclick="toggleCardForm()">
+          💳 Payer par carte de crédit
+        </button>
+
+        <div class="card-form" id="cardForm">
+          <div class="field">
+            <label>Nom sur la carte</label>
+            <input type="text" id="cardName" placeholder="Jean Dupont" />
+            <div class="error-msg" id="errName">Veuillez entrer votre nom</div>
+          </div>
+          <div class="field">
+            <label>Numéro de carte</label>
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" />
+            <div class="error-msg" id="errNumber">Numéro de carte invalide</div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Date d'expiration</label>
+              <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5" oninput="formatExpiry(this)" />
+              <div class="error-msg" id="errExpiry">Date invalide</div>
+            </div>
+            <div class="field">
+              <label>CVV</label>
+              <input type="text" id="cardCvv" placeholder="123" maxlength="4" />
+              <div class="error-msg" id="errCvv">CVV invalide</div>
+            </div>
+          </div>
+          <button class="submit-btn" onclick="submitCard()">✔ Confirmer — $15.00</button>
+        </div>
+      </div>
+
+      <div class="success-screen" id="successScreen">
+        <span class="checkmark">✅</span>
+        <h3>Paiement réussi !</h3>
+        <p>Merci pour ton accès ChessBoost !<br/>Un reçu t'a été envoyé par email.</p>
+      </div>
+    </div>
+
+    <div class="footer">Protégé par SSL 256 bits · ChessBoost × PayPal</div>
+  </div>
+
+  <script>
+    const FIXED_AMOUNT = 15.00;
+    const RATES = {
+      EUR: 0.92, CAD: 1.37, GBP: 0.79,
+      CHF: 0.89, JPY: 149.5, AUD: 1.55,
+      MXN: 17.1, BRL: 4.97
+    };
+    const SYMBOLS = {
+      EUR: '€', CAD: 'CA$', GBP: '£',
+      CHF: 'CHF ', JPY: '¥', AUD: 'A$',
+      MXN: 'MX$', BRL: 'R$'
+    };
+    const NAMES = {
+      EUR: 'Euro', CAD: 'Dollar canadien', GBP: 'Livre sterling',
+      CHF: 'Franc suisse', JPY: 'Yen japonais', AUD: 'Dollar australien',
+      MXN: 'Peso mexicain', BRL: 'Réal brésilien'
+    };
+
+    let activeConv = null;
+
+    function convert(currency) {
+      if (activeConv === currency) {
+        activeConv = null;
+        document.getElementById('convResult').textContent = '';
+        document.getElementById('btn' + currency).classList.remove('active');
+        return;
+      }
+      if (activeConv) document.getElementById('btn' + activeConv).classList.remove('active');
+      activeConv = currency;
+      document.getElementById('btn' + currency).classList.add('active');
+      const raw = FIXED_AMOUNT * RATES[currency];
+      const formatted = currency === 'JPY' ? Math.round(raw).toLocaleString() : raw.toFixed(2);
+      document.getElementById('convResult').textContent = `≈ ${SYMBOLS[currency]}${formatted} (${NAMES[currency]})`;
+    }
+
+    function formatCard(input) {
+      let v = input.value.replace(/\D/g, '').substring(0, 16);
+      input.value = v.replace(/(.{4})/g, '$1 ').trim();
+    }
+
+    function formatExpiry(input) {
+      let v = input.value.replace(/\D/g, '').substring(0, 4);
+      if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2);
+      input.value = v;
+    }
+
+    function toggleCardForm() {
+      document.getElementById('cardForm').classList.toggle('visible');
+    }
+
+    function payWithPaypal() {
+      const btn = document.getElementById('btnPaypal');
+      btn.classList.add('loading');
+      btn.textContent = 'Redirection vers PayPal...';
+
+      // ⚠️ Remplace par l'email PayPal de ChessBoost
+      const paypalEmail = 'dylanatlan7@gmail.com';
+      const url = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalEmail)}&amount=${FIXED_AMOUNT}&currency_code=USD&item_name=ChessBoost+Premium`;
+      setTimeout(() => { window.location.href = url; }, 1000);
+    }
+
+    function submitCard() {
+      let valid = true;
+      const name = document.getElementById('cardName').value.trim();
+      const number = document.getElementById('cardNumber').value.replace(/\s/g,'');
+      const expiry = document.getElementById('cardExpiry').value;
+      const cvv = document.getElementById('cardCvv').value;
+
+      ['errName','errNumber','errExpiry','errCvv'].forEach(id => document.getElementById(id).style.display = 'none');
+      ['cardName','cardNumber','cardExpiry','cardCvv'].forEach(id => document.getElementById(id).classList.remove('error'));
+
+      if (!name) { showError('cardName','errName'); valid = false; }
+      if (number.length < 13 || number.length > 16) { showError('cardNumber','errNumber'); valid = false; }
+      if (!/^\d{2}\/\d{2}$/.test(expiry)) { showError('cardExpiry','errExpiry'); valid = false; }
+      if (cvv.length < 3) { showError('cardCvv','errCvv'); valid = false; }
+
+      if (valid) {
+        document.getElementById('mainForm').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+      }
+    }
+
+    function showError(inputId, errId) {
+      document.getElementById(inputId).classList.add('error');
+      document.getElementById(errId).style.display = 'block';
+    }
+  </script>
+</body>
+</html>
