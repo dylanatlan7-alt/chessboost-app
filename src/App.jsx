@@ -1117,7 +1117,7 @@ export default function ChessApp(){
           fontWeight:700,color:th.accent,
         }}>chess.app</span>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:"0.4rem",position:"relative"}}>
+      <div onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",gap:"0.4rem",position:"relative"}}>
         <div style={{
           display:"flex",alignItems:"center",gap:"0.4rem",
           background:"rgba(0,0,0,0.45)",border:`1px solid ${th.accent}35`,
